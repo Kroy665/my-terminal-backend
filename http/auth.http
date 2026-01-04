@@ -1,0 +1,80 @@
+### Variables
+@baseUrl = http://localhost:6060
+@contentType = application/json
+
+### 1. Register a new user
+POST {{baseUrl}}/api/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "john.doe@example.com",
+  "name": "John Doe",
+  "password": "SecurePassword123!"
+}
+
+### 2. Login
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "john.doe@example.com",
+  "password": "SecurePassword123!"
+}
+
+### Save access token (copy from login response)
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWplZW5sYXAwMDAwcGN1c2Vubnh4YzBsIiwiZW1haWwiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsImlhdCI6MTc2NjI0MTczNywiZXhwIjoxNzY2ODQ2NTM3fQ.VBscU7v4H6gOfPe0NUOJVRvL3Hv0RMrrRTJ5Ta-YWBE
+@refreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWplZW5sYXAwMDAwcGN1c2Vubnh4YzBsIiwiZW1haWwiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsImlhdCI6MTc2NjI0MTczNywiZXhwIjoxNzY4ODMzNzM3fQ.hIsyJwf5j__fUq9I6u2ENbMhBycPDQy69mhSRipMWo4
+
+### 3. Refresh JWT Token
+POST {{baseUrl}}/api/auth/refresh
+Content-Type: {{contentType}}
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### 4. Get current user profile
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{accessToken}}
+
+### 5. Logout
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer {{accessToken}}
+
+### 6. Update user profile
+PUT {{baseUrl}}/api/auth/profile
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "John Smith",
+  "email": "john.smith@example.com"
+}
+
+### 7. Update user profile (name only)
+PUT {{baseUrl}}/api/auth/profile
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Jane Doe"
+}
+
+### 8. Update user profile (email only)
+PUT {{baseUrl}}/api/auth/profile
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "email": "jane.doe@example.com"
+}
+
+### 9. Change password
+POST {{baseUrl}}/api/auth/change-password
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "currentPassword": "SecurePassword123!",
+  "newPassword": "NewSecurePassword456!"
+}

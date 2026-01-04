@@ -1,0 +1,192 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  projects     Project[]
+  sandboxes    Sandbox[]
+
+  @@map("users")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  language    String
+  userId      String
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  nodes Node[] @relation("ProjectNodes")
+
+  // Relations
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sandboxes Sandbox[]
+
+  @@index([userId])
+  @@map("projects")
+}
+
+model Node {
+  id        String   @id @default(cuid())
+  name      String
+  type      NodeType
+  path      String // Full path from project root
+  size      Int? // File size in bytes (null for directories)
+  mimeType  String? // MIME type for files (null for directories)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Self-referential relationship for hierarchy
+  parentId String?
+  parent   Node?   @relation("NodeHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children Node[]  @relation("NodeHierarchy")
+
+  // Project relationship
+  projectId String
+  project   Project @relation("ProjectNodes", fields: [projectId], references: [id], onDelete: Cascade)
+
+  // File content (for small files) or reference to external storage
+  content FileContent?
+
+  // Metadata for different file types
+  metadata Json? // Store file-specific metadata as JSON
+
+  @@unique([projectId, path]) // Ensure unique paths within a project
+  @@index([projectId, parentId]) // Optimize for hierarchy queries
+  @@index([projectId, type]) // Optimize for filtering by type
+  @@map("nodes")
+}
+
+model FileContent {
+  id     String @id @default(cuid())
+  nodeId String @unique
+  node   Node   @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  // Store small files directly in database
+  content Bytes? // For small files (< 1MB)
+  code    String? // For small files (< 1MB)
+
+  // Or reference to external storage for large files
+  storageUrl  String? // URL to file in cloud storage (S3, etc.)
+  storageKey  String? // Key/path in external storage
+  storageType StorageType?
+
+  // Content hash for integrity checking
+  contentHash String?
+  encoding    String? // File encoding (utf-8, binary, etc.)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("file_contents")
+}
+
+enum NodeType {
+  FILE
+  DIRECTORY
+}
+
+enum StorageType {
+  DATABASE // Stored directly in database
+  S3 // Amazon S3
+  GCS // Google Cloud Storage
+  AZURE // Azure Blob Storage
+  LOCAL // Local file system
+}
+
+model Sandbox {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+
+  // E2B Sandbox tracking
+  e2bSandboxId String?       @unique // E2B sandbox ID once created
+  status       SandboxStatus @default(CREATING)
+
+  // Ownership and associations
+  userId    String
+  projectId String? // Optional: link to specific project
+
+  // Lifecycle management
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  expiresAt      DateTime // When sandbox should be auto-deleted
+  lastAccessedAt DateTime @default(now())
+
+  // TTL configuration (in seconds)
+  ttl Int @default(3600) // Default 1 hour
+
+  // Resource limits and usage
+  maxDiskSizeMB Int @default(1024) // Max 1GB disk
+  maxMemoryMB   Int @default(512) // Max 512MB RAM
+
+  // Sandbox settings (stored as JSON for flexibility)
+  // Can include: template, environment variables, initial files, etc.
+  settings Json?
+
+  // Metadata for tracking
+  metadata Json? // User-defined metadata
+
+  // Relations
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  commands Command[]
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([status])
+  @@index([expiresAt]) // For efficient cleanup queries
+  @@map("sandboxes")
+}
+
+model Command {
+  id          String  @id @default(cuid())
+  sandboxId   String
+  // input
+  command     String
+  workdir     String?
+  timeout     Int?
+  // output
+  stdout      String?
+  stderr      String?
+  exitCode    Int?
+  error       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  sandbox Sandbox @relation(fields: [sandboxId], references: [id], onDelete: Cascade)
+
+  @@index([sandboxId])
+  @@map("commands")
+}
+
+
+
+enum SandboxStatus {
+  CREATING // Being initialized
+  ACTIVE // Running and available
+  PAUSED // Temporarily paused
+  TERMINATED // Manually stopped or expired
+  FAILED // Creation or runtime failure
+}

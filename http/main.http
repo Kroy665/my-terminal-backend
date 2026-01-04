@@ -1,0 +1,16 @@
+### id: cmhk31y8f0002btmp6he5s7s2, userId: cmhk30wg20000btmpk8uwlk25
+POST http://localhost:6060/api/execution/add-files/cmhk31y8f0002btmp6he5s7s2/cmhk30wg20000btmpk8uwlk25
+
+Body:
+{
+    "files": [
+        {
+            "name": "file1.txt",
+            "content": "This is the content of file1.txt"
+        },
+        {
+            "name": "file2.txt",
+            "content": "This is the content of file2.txt"
+        }
+    ]
+}

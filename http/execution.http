@@ -1,0 +1,51 @@
+### Variables
+@baseUrl = http://localhost:6060
+@contentType = application/json
+@executionId = your-execution-id-here
+
+### 1. Execute Python code (basic)
+POST {{baseUrl}}/api/execution/run
+Content-Type: {{contentType}}
+
+{
+  "code": "print('Hello from E2B!')\nfor i in range(5):\n    print(f'Count: {i}')",
+  "language": "python"
+}
+
+### 2. Execute Python code with timeout
+POST {{baseUrl}}/api/execution/run
+Content-Type: {{contentType}}
+
+{
+  "code": "import time\nprint('Starting...')\ntime.sleep(2)\nprint('Done!')",
+  "language": "python",
+  "timeout": 5000
+}
+
+### 3. Execute Python code with mathematical operations
+POST {{baseUrl}}/api/execution/run
+Content-Type: {{contentType}}
+
+{
+  "code": "import math\n\ndef calculate_circle(radius):\n    area = math.pi * radius ** 2\n    circumference = 2 * math.pi * radius\n    return {'area': area, 'circumference': circumference}\n\nresult = calculate_circle(5)\nprint(f'Area: {result[\"area\"]:.2f}')\nprint(f'Circumference: {result[\"circumference\"]:.2f}')",
+  "language": "python"
+}
+
+### 4. Execute Python code with data processing
+POST {{baseUrl}}/api/execution/run
+Content-Type: {{contentType}}
+
+{
+  "code": "data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]\nsquares = [x**2 for x in data]\neven_numbers = [x for x in data if x % 2 == 0]\n\nprint('Original:', data)\nprint('Squares:', squares)\nprint('Even numbers:', even_numbers)\nprint('Sum:', sum(data))\nprint('Average:', sum(data) / len(data))",
+  "language": "python"
+}
+
+### 5. Get execution status and results
+GET {{baseUrl}}/api/execution/{{executionId}}
+
+### 6. Stop a running execution
+POST {{baseUrl}}/api/execution/{{executionId}}/stop
+
+### 7. Add files to sandbox (NOTE: This endpoint appears incomplete in the code)
+# This endpoint exists but has incomplete implementation
+# POST {{baseUrl}}/api/execution/add-files/:id/:userId

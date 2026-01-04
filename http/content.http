@@ -1,0 +1,133 @@
+### Variables
+@baseUrl = http://localhost:6060
+@contentType = application/json
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWplZW5sYXAwMDAwcGN1c2Vubnh4YzBsIiwiZW1haWwiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsImlhdCI6MTc2NjI0MTczNywiZXhwIjoxNzY2ODQ2NTM3fQ.VBscU7v4H6gOfPe0NUOJVRvL3Hv0RMrrRTJ5Ta-YWBE
+@projectId = cmjfng9vq0002pcusuiljchig
+@nodeId = your-node-id-here
+@parentId = your-parent-id-here
+
+### 1. Create a new file in a project
+POST {{baseUrl}}/api/content/{{projectId}}/files
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "index1.js",
+  "path": "/index1.js",
+  "mimeType": "application/javascript",
+  "code": "console.log('Hello World!');"
+}
+
+### 2. Create a new file with parent directory
+POST {{baseUrl}}/api/content/{{projectId}}/files
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "app.js",
+  "path": "/src/app.js",
+  "mimeType": "application/javascript",
+  "code": "// Application entry point\nfunction main() {\n  console.log('App started');\n}\n\nmain();",
+  "parentId": "{{parentId}}"
+}
+
+### 3. Create a Python file
+POST {{baseUrl}}/api/content/{{projectId}}/files
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "main.py",
+  "path": "/main.py",
+  "mimeType": "text/x-python",
+  "code": "def main():\n    print('Hello from Python!')\n\nif __name__ == '__main__':\n    main()"
+}
+
+### 4. Create a new directory in a project
+POST {{baseUrl}}/api/content/{{projectId}}/directories
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "src",
+  "path": "/src"
+}
+
+### 5. Create a nested directory
+POST {{baseUrl}}/api/content/{{projectId}}/directories
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "components",
+  "path": "/src/components",
+  "parentId": "{{parentId}}"
+}
+
+### 6. Get a node (file or directory)
+GET {{baseUrl}}/api/content/{{nodeId}}
+Authorization: Bearer {{accessToken}}
+
+### 7. Get file content
+GET {{baseUrl}}/api/content/{{nodeId}}/content
+Authorization: Bearer {{accessToken}}
+
+### 8. Update file content
+PUT {{baseUrl}}/api/content/{{nodeId}}/content
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "code": "console.log('Updated code!');\nconst x = 42;"
+}
+
+### 9. Get project file tree
+GET {{baseUrl}}/api/content/{{projectId}}/tree
+Authorization: Bearer {{accessToken}}
+
+### 10. Get directory contents (children)
+GET {{baseUrl}}/api/content/{{nodeId}}/children
+Authorization: Bearer {{accessToken}}
+
+### 11. Delete a node (file or directory)
+DELETE {{baseUrl}}/api/content/{{nodeId}}
+Authorization: Bearer {{accessToken}}
+
+### 12. Rename a node
+PATCH {{baseUrl}}/api/content/{{nodeId}}/rename
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "newFileName.js"
+}
+
+### 13. Move a node to a different parent
+PATCH {{baseUrl}}/api/content/{{nodeId}}/move
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "parentId": "{{parentId}}"
+}
+
+### 14. Move a node to root (no parent)
+PATCH {{baseUrl}}/api/content/{{nodeId}}/move
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "parentId": null
+}
+
+### 15. Search nodes in a project
+GET {{baseUrl}}/api/content/{{projectId}}/search?q=index
+Authorization: Bearer {{accessToken}}
+
+### 16. Search nodes with different query
+GET {{baseUrl}}/api/content/{{projectId}}/search?q=.js
+Authorization: Bearer {{accessToken}}
+
+### 17. Get project statistics
+GET {{baseUrl}}/api/content/{{projectId}}/stats
+Authorization: Bearer {{accessToken}}

@@ -1,0 +1,89 @@
+### Variables
+@baseUrl = http://localhost:6060
+@contentType = application/json
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWplZW5sYXAwMDAwcGN1c2Vubnh4YzBsIiwiZW1haWwiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsImlhdCI6MTc2NjI0MTczNywiZXhwIjoxNzY2ODQ2NTM3fQ.VBscU7v4H6gOfPe0NUOJVRvL3Hv0RMrrRTJ5Ta-YWBE
+@projectId = cmjfng9vq0002pcusuiljchig
+
+### 1. Get all projects for the user
+GET {{baseUrl}}/api/projects
+Authorization: Bearer {{accessToken}}
+
+### 2. Get all projects with search query
+GET {{baseUrl}}/api/projects?search=my project
+Authorization: Bearer {{accessToken}}
+
+### 3. Get project statistics
+GET {{baseUrl}}/api/projects/stats/overview
+Authorization: Bearer {{accessToken}}
+
+### 4. Create a new project (with description)
+POST {{baseUrl}}/api/projects
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "My Awesome Project",
+  "language": "javascript",
+  "description": "A project for building awesome things"
+}
+
+### 5. Create a new project (without description)
+POST {{baseUrl}}/api/projects
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Simple Project",
+  "language": "python"
+}
+
+### 6. Get a specific project by ID
+GET {{baseUrl}}/api/projects/{{projectId}}
+Authorization: Bearer {{accessToken}}
+
+### 7. Update a project (full update)
+PUT {{baseUrl}}/api/projects/{{projectId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Updated Project Name",
+  "description": "Updated description",
+  "language": "typescript",
+  "isPublic": true
+}
+
+### 8. Update a project (partial update - name only)
+PUT {{baseUrl}}/api/projects/{{projectId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "New Name"
+}
+
+### 9. Update a project (partial update - description only)
+PUT {{baseUrl}}/api/projects/{{projectId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "description": "New description"
+}
+
+### 10. Update a project (make it public)
+PUT {{baseUrl}}/api/projects/{{projectId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "isPublic": true
+}
+
+### 11. Delete a project
+DELETE {{baseUrl}}/api/projects/{{projectId}}
+Authorization: Bearer {{accessToken}}
+
+### 12. Duplicate a project
+POST {{baseUrl}}/api/projects/{{projectId}}/duplicate
+Authorization: Bearer {{accessToken}}

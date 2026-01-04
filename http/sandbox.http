@@ -1,0 +1,279 @@
+### Sandbox API Tests
+### Make sure to set your JWT token in the variable below
+@baseUrl = http://localhost:6060
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWplZW5sYXAwMDAwcGN1c2Vubnh4YzBsIiwiZW1haWwiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsImlhdCI6MTc2NjI0MTczNywiZXhwIjoxNzY2ODQ2NTM3fQ.VBscU7v4H6gOfPe0NUOJVRvL3Hv0RMrrRTJ5Ta-YWBE
+@sandboxId = cmjfylw1d000394q9uk12ornk
+
+### 1. Create a Sandbox
+POST {{baseUrl}}/api/sandboxes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Test Development Sandbox 2",
+  "description": "Testing sandbox features",
+  "ttl": 7200,
+  "template": "base",
+  "envVars": {
+    "NODE_ENV": "development",
+    "DEBUG": "true"
+  },
+  "metadata": {
+    "purpose": "testing",
+    "owner": "developer"
+  }
+}
+
+### 2. List All Sandboxes
+GET {{baseUrl}}/api/sandboxes
+Authorization: Bearer {{token}}
+
+### 3. List Sandboxes (including terminated)
+GET {{baseUrl}}/api/sandboxes?includeTerminated=true
+Authorization: Bearer {{token}}
+
+### 4. Get Specific Sandbox
+GET {{baseUrl}}/api/sandboxes/{{sandboxId}}
+Authorization: Bearer {{token}}
+
+### 5. Extend Sandbox Timeout
+PUT {{baseUrl}}/api/sandboxes/{{sandboxId}}/timeout
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "additionalSeconds": 3600
+}
+
+### 6. Pause Sandbox
+POST {{baseUrl}}/api/sandboxes/{{sandboxId}}/pause
+Authorization: Bearer {{token}}
+
+### 7. Resume Sandbox
+POST {{baseUrl}}/api/sandboxes/{{sandboxId}}/resume
+Authorization: Bearer {{token}}
+
+### 8. Write a File to Sandbox
+POST {{baseUrl}}/api/sandboxes/{{sandboxId}}/files
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "path": "/home/user/app.js",
+  "content": "console.log('Hello from E2B Sandbox!');\nconsole.log('Node version:', process.version);"
+}
+
+### 9. Write package.json
+POST {{baseUrl}}/api/sandboxes/{{sandboxId}}/files
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "path": "/home/user/package.json",
+  "content": "{\n  \"name\": \"sandbox-app\",\n  \"version\": \"1.0.0\",\n  \"description\": \"Test app in sandbox\",\n  \"main\": \"app.js\"\n}"
+}
+
+### 10. List Files in Root
+GET {{baseUrl}}/api/sandboxes/{{sandboxId}}/files?path=/home/user
+Authorization: Bearer {{token}}
+
+### 11. Read a File
+GET {{baseUrl}}/api/sandboxes/{{sandboxId}}/files/read?path=/home/user/app.js
+Authorization: Bearer {{token}}
+
+### 12. Execute a Command (Node version)
+POST {{baseUrl}}/api/sandboxes/{{sandboxId}}/commands
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "command": "node --version",
+  "workdir": "/home/user"
+}
+
+### 13. Execute Node App
+POST {{baseUrl}}/api/sandboxes/{{sandboxId}}/commands
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "command": "node app.js",
+  "workdir": "/home/user"
+}
+
+### 14. Execute Shell Commands
+POST {{baseUrl}}/api/sandboxes/{{sandboxId}}/commands
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "command": "ls -la",
+  "workdir": "/home/user"
+}
+
+### 15. Execute Multiple Commands (using shell)
+POST {{baseUrl}}/api/sandboxes/{{sandboxId}}/commands
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "command": "pwd && ls -la && echo 'Done'",
+  "workdir": "/home/user"
+}
+
+### 16. Update Sandbox Settings
+PUT {{baseUrl}}/api/sandboxes/{{sandboxId}}/settings
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "template": "nodejs",
+  "envVars": {
+    "NODE_ENV": "production",
+    "API_KEY": "test-key"
+  },
+  "metadata": {
+    "updated": true,
+    "timestamp": "2025-12-20"
+  }
+}
+
+### 17. Delete a File
+DELETE {{baseUrl}}/api/sandboxes/{{sandboxId}}/files?path=/home/user/app.js
+Authorization: Bearer {{token}}
+
+### 18. Relaunch Sandbox (creates new with same settings)
+POST {{baseUrl}}/api/sandboxes/{{sandboxId}}/relaunch
+Authorization: Bearer {{token}}
+
+### 19. Delete Sandbox
+DELETE {{baseUrl}}/api/sandboxes/{{sandboxId}}
+Authorization: Bearer {{token}}
+
+### ==========================================
+### Complete Workflow Example
+### ==========================================
+
+### Step 1: Create Sandbox for Python
+POST {{baseUrl}}/api/sandboxes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Python Sandbox",
+  "description": "Testing Python execution",
+  "ttl": 3600
+}
+
+### Step 2: Write Python Script
+POST {{baseUrl}}/api/sandboxes/{{sandboxId}}/files
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "path": "/home/user/script.py",
+  "content": "import sys\nimport platform\n\nprint(f'Python version: {sys.version}')\nprint(f'Platform: {platform.platform()}')\nprint('Hello from Python!')"
+}
+
+### Step 3: Execute Python Script
+POST {{baseUrl}}/api/sandboxes/{{sandboxId}}/commands
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "command": "python3 script.py",
+  "workdir": "/home/user"
+}
+
+### Step 4: List Files
+GET {{baseUrl}}/api/sandboxes/{{sandboxId}}/files?path=/home/user
+Authorization: Bearer {{token}}
+
+### Step 5: Cleanup
+DELETE {{baseUrl}}/api/sandboxes/{{sandboxId}}
+Authorization: Bearer {{token}}
+
+### ==========================================
+### Project-Linked Sandbox Example
+### ==========================================
+
+### Create Sandbox Linked to Project
+POST {{baseUrl}}/api/sandboxes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Project Build Environment",
+  "description": "Sandbox for project compilation",
+  "projectId": "YOUR_PROJECT_ID_HERE",
+  "ttl": 7200,
+  "envVars": {
+    "BUILD_ENV": "production"
+  }
+}
+
+### ==========================================
+### Error Handling Examples
+### ==========================================
+
+### Test: Missing Required Fields
+POST {{baseUrl}}/api/sandboxes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "description": "This will fail - missing name"
+}
+
+### Test: Invalid Sandbox ID
+GET {{baseUrl}}/api/sandboxes/invalid-sandbox-id
+Authorization: Bearer {{token}}
+
+### Test: Unauthorized Access (use different user's sandbox ID)
+GET {{baseUrl}}/api/sandboxes/another-users-sandbox-id
+Authorization: Bearer {{token}}
+
+### Test: Execute Without Command
+POST {{baseUrl}}/api/sandboxes/{{sandboxId}}/commands
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "workdir": "/home/user"
+}
+
+### Test: Write File Without Path
+POST {{baseUrl}}/api/sandboxes/{{sandboxId}}/files
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "content": "This will fail"
+}
+
+### ==========================================
+### Authentication Tests
+### ==========================================
+
+### Test: No Token (should return 401)
+GET {{baseUrl}}/api/sandboxes
+
+### Test: Invalid Token (should return 401)
+GET {{baseUrl}}/api/sandboxes
+Authorization: Bearer invalid-token-here
+
+### Test: Sync Files
+POST {{baseUrl}}/api/sandboxes/{{sandboxId}}/sync-files
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "projectId": "cmjfng9vq0002pcusuiljchig"
+}
+
+### ==========================================
+### Health Check
+### ==========================================
+
+### Check Server Health
+GET {{baseUrl}}/health

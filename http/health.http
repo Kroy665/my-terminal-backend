@@ -1,0 +1,5 @@
+### Variables
+@baseUrl = http://localhost:6060
+
+### Health check endpoint
+GET {{baseUrl}}/health
