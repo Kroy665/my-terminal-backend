@@ -36,6 +36,8 @@ router.post(
     const { name, description, projectId, ttl, template, envVars, metadata } =
       req.body;
 
+    console.log("req.body:::", { name, description, projectId, ttl, template, envVars, metadata });
+
     if (!name || !name.trim()) {
       res.status(400).json({
         error: {
@@ -68,6 +70,33 @@ router.post(
         envVars,
         metadata,
       });
+
+      // Try to sync files to sandbox with retry logic
+      // Since e2bSandboxId may not be available immediately, retry up to 7 times with 1 second delay
+      if (projectId) {
+        const maxRetries = 7;
+        const retryDelay = 1000; // 1 second
+
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+          try {
+            // Wait before each attempt (except the first one)
+            if (attempt > 1) {
+              await new Promise(resolve => setTimeout(resolve, retryDelay));
+            }
+
+            await syncFilesToSandbox(sandbox.id, req.userId, projectId);
+            logger.info(`Files synced to sandbox ${sandbox.id} on attempt ${attempt}`);
+            break; // Success, exit the retry loop
+          } catch (error: any) {
+            logger.warn(`File sync attempt ${attempt}/${maxRetries} failed for sandbox ${sandbox.id}:`, error.message);
+
+            // If this was the last attempt, log the failure but don't throw
+            if (attempt === maxRetries) {
+              logger.error(`Failed to sync files to sandbox ${sandbox.id} after ${maxRetries} attempts`);
+            }
+          }
+        }
+      }
 
       logger.info(`Sandbox created: ${sandbox.id} by user: ${req.email}`);
 
